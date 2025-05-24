@@ -27,12 +27,10 @@ app.use(express.static("public"));
 
 
 // routes import
-// import bookRouter from "./routes/book.routes.js";
-// import userRouter from "./routes/user.routes.js";
-// import commentRouter from "./routes/comment.routes.js";
-// import orderRouter from "./routes/order.route.js";
+import userRouter from "./routes/user.route.js";
 
 // routes declaration
+app.use("/api/v1/user", userRouter);
 
 
 // Swagger
