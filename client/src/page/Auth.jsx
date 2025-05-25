@@ -6,7 +6,7 @@ import Login from '../components/Login';
 
 
 const Auth = () => {
-  const [currentView, setCurrentView] = useState(() => localStorage.getItem('currentView') || 'login');
+  const [currentView, setCurrentView] = useState(() => localStorage.getItem('login') || 'login');
   const [userData, setUserData] = useState(() => {
     const stored = localStorage.getItem('userData');
     return stored ? JSON.parse(stored) : null;
