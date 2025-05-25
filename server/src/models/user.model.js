@@ -39,7 +39,7 @@ userSchema.pre('save', async function(next) {
 });
 
 userSchema.methods.generateOTP = function() {
-    const otpCode = "1234";
+    const otpCode = "123456";
     this.otp = {
         code: otpCode,
         expiresAt: new Date(Date.now() + 10 * 60 * 1000) 

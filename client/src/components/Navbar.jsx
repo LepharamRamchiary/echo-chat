@@ -17,7 +17,7 @@ function Navbar() {
 
           {/* Register Button - Desktop */}
           <div className="hidden md:block">
-            <button onClick={() => navigate('/register')} className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-md text-sm font-medium transition duration-300">
+            <button onClick={() => navigate('/auth')} className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-md text-sm font-medium transition duration-300">
               Register
             </button>
           </div>
@@ -37,7 +37,7 @@ function Navbar() {
         {isMenuOpen && (
           <div className="md:hidden">
             <div className="px-2 pt-2 pb-3 space-y-1 sm:px-3 bg-white border-t">
-              <button onClick={() => navigate('/register')} className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-md text-base font-medium w-full text-center transition duration-300">
+              <button onClick={() => navigate('/auth')} className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-md text-base font-medium w-full text-center transition duration-300">
                 Register
               </button>
             </div>
