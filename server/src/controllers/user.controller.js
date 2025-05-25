@@ -1,4 +1,3 @@
-// src/controllers/user.controller.js
 import { asyncHandler } from '../utils/asyncHandler.js';
 import { ApiError } from '../utils/apiError.js';
 import { ApiResponse } from '../utils/apiResponse.js';
@@ -15,11 +14,9 @@ const registerUser = asyncHandler(async (req, res) => {
         throw new ApiError(400, 'Phone number is required');
     }
 
-    // Check if user already exists
     const existingUser = await User.findOne({ phoneNumber });
         
     if (existingUser && existingUser.isVerified) {
-        // Return response instead of throwing error for better UX
         return res.status(409).json(
             new ApiResponse(409, null, 'User with this phone number already exists')
         );
@@ -27,10 +24,8 @@ const registerUser = asyncHandler(async (req, res) => {
 
     let user;
     if (existingUser && !existingUser.isVerified) {
-        // User exists but not verified, resend OTP
         user = existingUser;
     } else {
-        // Create new user
         user = new User({ phoneNumber, fullname });
     }
 
@@ -68,7 +63,6 @@ const verifyOTP = asyncHandler(async (req, res) => {
         throw new ApiError(400, 'Invalid or expired OTP');
     }
 
-    // Mark user as verified and clear OTP
     user.isVerified = true;
     user.clearOTP();
     await user.save();
@@ -137,10 +131,17 @@ const getCurrentUser = asyncHandler(async (req, res) => {
     );
 });
 
+const logoutUser = asyncHandler(async (req, res) => {
+    res.status(200).json(
+        new ApiResponse(200, null, 'User logged out successfully')
+    );
+});
+
 export {
     healthCheck,
     registerUser,
     verifyOTP,
     loginUser,
-    getCurrentUser
+    getCurrentUser,
+    logoutUser
 };

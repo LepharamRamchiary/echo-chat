@@ -1,10 +1,8 @@
 import React, { useState } from 'react';
 import { Phone, User } from 'lucide-react';
 
-// API configuration
-const API_BASE_URL = 'http://localhost:8000/api/v1/user'; // Update this to your backend URL
+const API_BASE_URL = 'http://localhost:8000/api/v1/user';
 
-// Register Component
 const Register = ({ onSuccess }) => {
   const [formData, setFormData] = useState({
     fullName: '',
@@ -15,13 +13,12 @@ const Register = ({ onSuccess }) => {
 
   const handleInputChange = (field, value) => {
     if (field === 'phoneNumber') {
-      // Only allow digits and limit to 10
       const digits = value.replace(/\D/g, '').substring(0, 10);
       setFormData(prev => ({ ...prev, [field]: digits }));
     } else {
       setFormData(prev => ({ ...prev, [field]: value }));
     }
-    setError(''); // Clear error when user types
+    setError('');
   };
 
   const validateForm = () => {
@@ -40,7 +37,6 @@ const Register = ({ onSuccess }) => {
     return true;
   };
 
-  // API call function
   const registerUserAPI = async (userData) => {
     try {
       const response = await fetch(`${API_BASE_URL}/register`, {
@@ -48,17 +44,16 @@ const Register = ({ onSuccess }) => {
         headers: {
           'Content-Type': 'application/json',
         },
-        credentials: 'include', // Include cookies if needed
+        credentials: 'include', 
         body: JSON.stringify({
           phoneNumber: userData.phoneNumber,
-          fullname: userData.fullName // Note: backend expects 'fullname', not 'fullName'
+          fullname: userData.fullName 
         }),
       });
 
       const data = await response.json();
 
       if (!response.ok) {
-        // Handle API errors
         throw new Error(data.message || `HTTP error! status: ${response.status}`);
       }
 
