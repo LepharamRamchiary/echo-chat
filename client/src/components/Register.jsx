@@ -94,7 +94,7 @@ const Register = ({ onSuccess }) => {
       let errorMessage = 'Failed to register. Please try again.';
       
       if (err.message.includes('409') || err.message.includes('already exists')) {
-        errorMessage = 'User with this phone number already exists and is verified.';
+        errorMessage = 'User with this phone number already exists';
       } else if (err.message.includes('400')) {
         errorMessage = 'Invalid input. Please check your details.';
       } else if (err.message.includes('network') || err.name === 'TypeError') {

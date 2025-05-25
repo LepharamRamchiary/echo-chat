@@ -17,9 +17,12 @@ const registerUser = asyncHandler(async (req, res) => {
 
     // Check if user already exists
     const existingUser = await User.findOne({ phoneNumber });
-    
+        
     if (existingUser && existingUser.isVerified) {
-        throw new ApiError(409, 'User with this phone number already exists');
+        // Return response instead of throwing error for better UX
+        return res.status(409).json(
+            new ApiResponse(409, null, 'User with this phone number already exists')
+        );
     }
 
     let user;
