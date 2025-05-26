@@ -29,9 +29,11 @@ app.use(express.static("public"));
 
 // routes import
 import userRouter from "./routes/user.route.js";
+import messageRouter from "./routes/message.route.js"
 
 // routes declaration
 app.use("/api/v1/user", userRouter);
+app.use("/api/v1/message", messageRouter);
 
 
 // Swagger
