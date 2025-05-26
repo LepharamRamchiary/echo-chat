@@ -143,7 +143,7 @@ function Navbar() {
                   onClick={handleDashboardClick}
                   className="text-gray-700 hover:text-blue-600 px-3 py-2 rounded-md text-sm font-medium transition duration-300"
                 >
-                  Dashboard
+                  Message
                 </button>
 
                 {/* User Menu */}
@@ -169,7 +169,7 @@ function Navbar() {
                         onClick={handleDashboardClick}
                         className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
                       >
-                        Dashboard
+                        Message
                       </button>
                       <button
                         onClick={handleLogout}
@@ -188,7 +188,7 @@ function Navbar() {
                 onClick={() => navigate("/auth")}
                 className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-md text-sm font-medium transition duration-300"
               >
-                Register
+                Login to Chat
               </button>
             )}
           </div>
@@ -221,7 +221,7 @@ function Navbar() {
                     onClick={handleDashboardClick}
                     className="block w-full text-left px-4 py-2 text-base text-gray-700 hover:bg-gray-100 rounded-md"
                   >
-                    Dashboard
+                    Message
                   </button>
 
                   {/* Logout Button */}
@@ -239,7 +239,7 @@ function Navbar() {
                   onClick={handleMobileRegisterClick}
                   className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-md text-base font-medium w-full text-center transition duration-300 relative z-50"
                 >
-                  Register
+                  Login to Chat
                 </button>
               )}
             </div>
