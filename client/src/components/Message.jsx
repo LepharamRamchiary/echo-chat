@@ -1,5 +1,14 @@
 import { useState, useRef, useEffect } from "react";
 
+
+function getInitials(name) {
+  if (!name) return "";
+  return name
+    .split(" ")
+    .map((n) => n[0])
+    .join("")
+    .toUpperCase();
+}
 function Message() {
   const [messages, setMessages] = useState([
     { id: 1, text: "Hey there!", sender: "other", time: "10:30 AM" },
@@ -19,7 +28,11 @@ function Message() {
   ]);
   const [newMessage, setNewMessage] = useState("");
   const [isTyping, setIsTyping] = useState(false);
+  const [user, setUser] = useState(null);
   const messagesEndRef = useRef(null);
+
+  console.log("username", user);
+  
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({
@@ -30,6 +43,20 @@ function Message() {
   };
 
   useEffect(() => {
+    const token = localStorage.getItem("token");
+    console.log("token", token);
+    if (!token) return;
+    fetch("http://localhost:8000/api/v1/user/current-user", {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    })
+      .then((res) => res.json())
+      .then((data) => setUser(data.data))
+      .catch(() => setUser(null));
+  }, []);
+
+  useEffect(() => {
     scrollToBottom();
   }, [messages]);
 
@@ -37,7 +64,7 @@ function Message() {
     if (newMessage.trim() === "") return;
 
     const newMsg = {
-      id: Date.now(), 
+      id: Date.now(),
       text: newMessage.trim(),
       sender: "me",
       time: new Date().toLocaleTimeString([], {
@@ -87,17 +114,13 @@ function Message() {
   };
 
   return (
-    <div className="flex flex-col h-96 bg-gray-100 max-w-5xl mx-auto border-l border-r border-gray-300 rounded-lg overflow-hidden shadow-lg">
-      
+    <div className="flex flex-col h-96 bg-gray-100 sm:max-w-5xl sm:mx-auto border-l border-r border-gray-300 rounded-lg overflow-hidden shadow-lg">
       <div className="bg-green-300 text-white p-4 flex items-center shadow-md">
         <div className="w-10 h-10 rounded-full bg-gray-300 mr-3 flex items-center justify-center">
-          <span className="text-gray-900 font-semibold">JD</span>
+          <span className="text-gray-900 font-semibold">{user ? getInitials(user.fullname) : "?"}</span>
         </div>
         <div className="flex-1">
-          <h1 className="font-semibold">John Doe</h1>
-          <p className="text-xs opacity-80">
-            {isTyping ? "typing..." : "online"}
-          </p>
+          <h1 className="font-semibold">{user ? user.fullname : "Loading..."}</h1>
         </div>
         <div className="flex space-x-4">
           <div className="relative group">
@@ -126,7 +149,7 @@ function Message() {
               <svg
                 className="h-5 w-5 text-red-400"
                 viewBox="0 0 24 24"
-                stroke-width="1.5"
+                strokeWidth="1.5"
                 stroke="currentColor"
                 xmlns="http://www.w3.org/2000/svg"
               >
@@ -231,7 +254,6 @@ function Message() {
 
       <div className="bg-gray-50 p-3 border-t border-gray-200">
         <div className="flex items-center bg-white rounded-full border border-gray-300 px-3 py-2">
-
           <input
             type="text"
             value={newMessage}
@@ -240,7 +262,6 @@ function Message() {
             placeholder="Type a message..."
             className="flex-1 outline-none bg-transparent text-gray-700 placeholder-gray-500"
           />
-
 
           <button
             onClick={handleSendMessage}

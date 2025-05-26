@@ -75,6 +75,7 @@ const Login = ({ onSuccess, onRegisterClick }) => {
       // Store token if needed (you might want to use a context or state management)
       if (apiResponse.data.accessToken) {
         // You can store in sessionStorage or context
+        await localStorage.setItem('token', apiResponse.data.accessToken);
         // sessionStorage.setItem('accessToken', apiResponse.data.accessToken);
         console.log('Access Token:', apiResponse.data.accessToken);
       }
