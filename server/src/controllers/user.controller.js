@@ -80,7 +80,7 @@ const verifyOTP = asyncHandler(async (req, res) => {
                 },
                 accessToken
             },
-            'Phone number verified successfully'
+            'Phone number verified successfully. Register Sucessfully'
         )
     );
 });
