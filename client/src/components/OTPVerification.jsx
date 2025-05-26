@@ -1,16 +1,17 @@
 import React, { useState, useEffect } from 'react';
-import { MessageSquare } from 'lucide-react';
+import { MessageSquare, CheckCircle } from 'lucide-react';
 
-// API configuration
-const API_BASE_URL = 'http://localhost:8000/api/v1/user'; // Update this to your backend URL
+const API_BASE_URL = 'http://localhost:8000/api/v1/user'; 
 
-// OTP Verification Component
-const OTPVerification = ({ userData, onSuccess, onBack }) => {
-  const [otp, setOtp] = useState(['', '', '', '', '', '']); // Changed to 6 digits to match backend
+const OTPVerification = ({ userData, onSuccess, onBackToRegister }) => {
+  const [otp, setOtp] = useState(['', '', '', '', '', '']); 
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const [successMessage, setSuccessMessage] = useState(''); 
   const [timer, setTimer] = useState(60);
+  const [infoMessage, setInfoMessage] = useState(userData?.message || '');
   const [resendLoading, setResendLoading] = useState(false);
+  const [isVerified, setIsVerified] = useState(false); 
 
   useEffect(() => {
     const interval = setInterval(() => {
@@ -19,15 +20,38 @@ const OTPVerification = ({ userData, onSuccess, onBack }) => {
     return () => clearInterval(interval);
   }, []);
 
+  useEffect(() => {
+    if (infoMessage) {
+      const timer = setTimeout(() => setInfoMessage(''), 5000);
+      return () => clearTimeout(timer);
+    }
+  }, [infoMessage]);
+
+
+  useEffect(() => {
+    if (successMessage && isVerified) {
+      const timer = setTimeout(() => {
+        setSuccessMessage('');
+        if (onSuccess) {
+          onSuccess({
+            ...userData,
+            isVerified: true,
+            message: successMessage
+          });
+        }
+      }, 3000);
+      return () => clearTimeout(timer);
+    }
+  }, [successMessage, isVerified, userData, onSuccess]);
+
   const handleOtpChange = (index, value) => {
-    if (!/^\d*$/.test(value)) return; // Only allow digits
+    if (!/^\d*$/.test(value)) return; 
     
     const newOtp = [...otp];
-    newOtp[index] = value.slice(-1); // Take only last character
+    newOtp[index] = value.slice(-1); 
     setOtp(newOtp);
     setError('');
 
-    // Auto focus next input
     if (value && index < otp.length - 1) {
       const nextInput = document.querySelector(`input[data-index="${index + 1}"]`);
       if (nextInput) nextInput.focus();
@@ -41,7 +65,6 @@ const OTPVerification = ({ userData, onSuccess, onBack }) => {
     }
   };
 
-  // API call to verify OTP
   const verifyOTPAPI = async (phoneNumber, otpCode) => {
     try {
       const response = await fetch(`${API_BASE_URL}/verify-otp`, {
@@ -49,7 +72,7 @@ const OTPVerification = ({ userData, onSuccess, onBack }) => {
         headers: {
           'Content-Type': 'application/json',
         },
-        credentials: 'include', // Include cookies if needed
+        credentials: 'include', 
         body: JSON.stringify({
           phoneNumber: phoneNumber,
           otp: otpCode
@@ -69,7 +92,6 @@ const OTPVerification = ({ userData, onSuccess, onBack }) => {
     }
   };
 
-  // API call to resend OTP (register again)
   const resendOTPAPI = async (phoneNumber, fullname) => {
     try {
       const response = await fetch(`${API_BASE_URL}/register`, {
@@ -106,24 +128,28 @@ const OTPVerification = ({ userData, onSuccess, onBack }) => {
 
     setLoading(true);
     setError('');
+    setSuccessMessage('');
 
     try {
       const apiResponse = await verifyOTPAPI(userData.phoneNumber, otpString);
       
       console.log('OTP verification successful:', apiResponse);
       
-      // Call onSuccess with the API response data
-      if (onSuccess) {
-        onSuccess({
-          ...userData,
-          isVerified: true,
-          accessToken: apiResponse.data.accessToken,
-          user: apiResponse.data.user,
-          message: apiResponse.message
-        });
-      }
+      setSuccessMessage(apiResponse.message || 'Phone number verified successfully!');
+      setIsVerified(true);
+      
+      const responseData = {
+        ...userData,
+        isVerified: true,
+        accessToken: apiResponse.data.accessToken,
+        user: apiResponse.data.user,
+        message: apiResponse.message
+      };
+
+      console.log('Verification complete, showing success message...');
+      
     } catch (err) {
-      // Handle different types of errors
+  
       let errorMessage = 'Invalid or expired OTP. Please try again.';
       
       if (err.message.includes('404')) {
@@ -137,6 +163,7 @@ const OTPVerification = ({ userData, onSuccess, onBack }) => {
       }
       
       setError(errorMessage);
+      setIsVerified(false);
     } finally {
       setLoading(false);
     }
@@ -147,21 +174,19 @@ const OTPVerification = ({ userData, onSuccess, onBack }) => {
     
     setResendLoading(true);
     setError('');
+    setSuccessMessage(''); 
 
     try {
       const apiResponse = await resendOTPAPI(userData.phoneNumber, userData.fullName);
       
       console.log('OTP resent successfully:', apiResponse);
       
-      // Reset timer and OTP inputs
       setTimer(60);
       setOtp(['', '', '', '', '', '']);
+      setIsVerified(false);
       
-      // Show success message briefly
-      setError(''); // Clear any previous errors
+      setInfoMessage('OTP sent successfully to your phone number.');
       
-      // You might want to show a success message
-      // For now, we'll just reset the form
     } catch (err) {
       let errorMessage = 'Failed to resend OTP. Please try again.';
       
@@ -180,88 +205,126 @@ const OTPVerification = ({ userData, onSuccess, onBack }) => {
   return (
     <div className="min-h-screen flex items-center justify-center p-4 bg-gradient-to-br from-green-50 to-blue-50">
       <div className="bg-white rounded-3xl shadow-2xl w-full max-w-md p-8">
+        
+        {infoMessage && !successMessage && (
+          <div className="mb-4 bg-green-50 border border-green-200 text-green-700 px-4 py-3 rounded-xl text-sm text-center">
+            {infoMessage}
+          </div>
+        )}
+
+        {successMessage && (
+          <div className="mb-4 bg-green-100 border border-green-300 text-green-800 px-4 py-3 rounded-xl text-sm text-center flex items-center justify-center space-x-2">
+            <CheckCircle className="w-5 h-5 text-green-600" />
+            <span className="font-medium">{successMessage}</span>
+          </div>
+        )}
+
         <button
-          onClick={onBack}
-          disabled={loading || resendLoading}
+          onClick={onBackToRegister}
+          disabled={loading || resendLoading || isVerified}
           className="mb-6 text-gray-600 hover:text-gray-800 text-sm font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
         >
           ← Back to Registration
         </button>
 
         <div className="text-center mb-8">
-          <div className="bg-gradient-to-r from-green-500 to-blue-500 rounded-full w-20 h-20 flex items-center justify-center mx-auto mb-4">
-            <MessageSquare className="w-10 h-10 text-white" />
+          <div className={`rounded-full w-20 h-20 flex items-center justify-center mx-auto mb-4 ${
+            isVerified 
+              ? 'bg-gradient-to-r from-green-500 to-green-600' 
+              : 'bg-gradient-to-r from-green-500 to-blue-500'
+          }`}>
+            {isVerified ? (
+              <CheckCircle className="w-10 h-10 text-white" />
+            ) : (
+              <MessageSquare className="w-10 h-10 text-white" />
+            )}
           </div>
-          <h1 className="text-3xl font-bold text-gray-800 mb-2">Verify OTP</h1>
+          <h1 className="text-3xl font-bold text-gray-800 mb-2">
+            {isVerified ? 'Verified!' : 'Verify OTP'}
+          </h1>
           <p className="text-gray-600">
-            Enter the 6-digit code sent to<br />
-            <span className="font-semibold">+91 {userData.phoneNumber}</span>
+            {isVerified ? (
+              'Your phone number has been verified successfully'
+            ) : (
+              <>
+                Enter the 6-digit code sent to<br />
+                <span className="font-semibold">+91 {userData.phoneNumber}</span>
+              </>
+            )}
           </p>
         </div>
 
-        <div className="space-y-6">
-          <div className="flex justify-center space-x-2">
-            {otp.map((digit, index) => (
-              <input
-                key={index}
-                data-index={index}
-                type="text"
-                inputMode="numeric"
-                value={digit}
-                onChange={(e) => handleOtpChange(index, e.target.value)}
-                onKeyDown={(e) => handleKeyDown(index, e)}
-                disabled={loading || resendLoading}
-                className="w-12 h-12 text-center text-xl font-bold border-2 border-gray-300 rounded-xl focus:ring-2 focus:ring-green-500 focus:border-green-500 outline-none transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
-                maxLength="1"
-              />
-            ))}
-          </div>
-
-          {error && (
-            <div className="bg-red-50 border border-red-200 text-red-600 px-4 py-3 rounded-xl text-sm text-center">
-              {error}
+        {!isVerified ? (
+          <div className="space-y-6">
+            <div className="flex justify-center space-x-2">
+              {otp.map((digit, index) => (
+                <input
+                  key={index}
+                  data-index={index}
+                  type="text"
+                  inputMode="numeric"
+                  value={digit}
+                  onChange={(e) => handleOtpChange(index, e.target.value)}
+                  onKeyDown={(e) => handleKeyDown(index, e)}
+                  disabled={loading || resendLoading}
+                  className="w-12 h-12 text-center text-xl font-bold border-2 border-gray-300 rounded-xl focus:ring-2 focus:ring-green-500 focus:border-green-500 outline-none transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+                  maxLength="1"
+                />
+              ))}
             </div>
-          )}
 
-          <button
-            onClick={handleVerify}
-            disabled={loading || resendLoading || otp.join('').length !== 6}
-            className="w-full bg-gradient-to-r from-green-500 to-blue-500 text-white py-3 rounded-xl font-semibold hover:from-green-600 hover:to-blue-600 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 transform hover:scale-105"
-          >
-            {loading ? (
-              <div className="flex items-center justify-center space-x-2">
-                <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-                <span>Verifying...</span>
+            {error && (
+              <div className="bg-red-50 border border-red-200 text-red-600 px-4 py-3 rounded-xl text-sm text-center">
+                {error}
               </div>
-            ) : (
-              'Verify OTP'
             )}
-          </button>
 
-          <div className="text-center">
-            <p className="text-gray-600 text-sm mb-2">Didn't receive the code?</p>
             <button
-              onClick={handleResend}
-              disabled={timer > 0 || loading || resendLoading}
-              className="text-green-600 hover:text-green-800 font-semibold text-sm disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+              onClick={handleVerify}
+              disabled={loading || resendLoading || otp.join('').length !== 6}
+              className="w-full bg-gradient-to-r from-green-500 to-blue-500 text-white py-3 rounded-xl font-semibold hover:from-green-600 hover:to-blue-600 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 transform hover:scale-105"
             >
-              {resendLoading ? (
-                <div className="flex items-center justify-center space-x-1">
-                  <div className="w-3 h-3 border-2 border-green-600 border-t-transparent rounded-full animate-spin"></div>
-                  <span>Resending...</span>
+              {loading ? (
+                <div className="flex items-center justify-center space-x-2">
+                  <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                  <span>Verifying...</span>
                 </div>
-              ) : timer > 0 ? (
-                `Resend in ${timer}s`
               ) : (
-                'Resend OTP'
+                'Verify OTP'
               )}
             </button>
-          </div>
 
-          <div className="text-center text-xs text-gray-500 mt-4">
-            <p>Make sure you have a stable internet connection</p>
+            <div className="text-center">
+              <p className="text-gray-600 text-sm mb-2">Didn't receive the code?</p>
+              <button
+                onClick={handleResend}
+                disabled={timer > 0 || loading || resendLoading}
+                className="text-green-600 hover:text-green-800 font-semibold text-sm disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+              >
+                {resendLoading ? (
+                  <div className="flex items-center justify-center space-x-1">
+                    <div className="w-3 h-3 border-2 border-green-600 border-t-transparent rounded-full animate-spin"></div>
+                    <span>Resending...</span>
+                  </div>
+                ) : timer > 0 ? (
+                  `Resend in ${timer}s`
+                ) : (
+                  'Resend OTP'
+                )}
+              </button>
+            </div>
+
+            <div className="text-center text-xs text-gray-500 mt-4">
+              <p>Make sure you have a stable internet connection</p>
+            </div>
           </div>
-        </div>
+        ) : (
+          <div className="text-center">
+            <div className="animate-pulse">
+              <p className="text-gray-600">Redirecting you shortly...</p>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );

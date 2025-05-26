@@ -6,7 +6,7 @@ import Login from '../components/Login';
 
 const Auth = ({ onAuthSuccess }) => {
   const [currentView, setCurrentView] = useState(() => {
-    const stored = localStorage.getItem('currentView');
+    const stored = localStorage.getItem('login');
     return stored || 'login';
   });
   
