@@ -4,9 +4,12 @@ import OTPVerification from '../components/OTPVerification';
 import Dashboard from '../components/Dashboard';
 import Login from '../components/Login';
 
-
-const Auth = () => {
-  const [currentView, setCurrentView] = useState(() => localStorage.getItem('login') || 'login');
+const Auth = ({ onAuthSuccess }) => {
+  const [currentView, setCurrentView] = useState(() => {
+    const stored = localStorage.getItem('currentView');
+    return stored || 'login';
+  });
+  
   const [userData, setUserData] = useState(() => {
     const stored = localStorage.getItem('userData');
     return stored ? JSON.parse(stored) : null;
@@ -14,7 +17,9 @@ const Auth = () => {
 
   useEffect(() => {
     localStorage.setItem('currentView', currentView);
-    localStorage.setItem('userData', JSON.stringify(userData));
+    if (userData) {
+      localStorage.setItem('userData', JSON.stringify(userData));
+    }
   }, [currentView, userData]);
 
   // Handle successful login
@@ -22,6 +27,11 @@ const Auth = () => {
     console.log('Login successful:', data);
     setUserData(data);
     setCurrentView('dashboard');
+    
+    // Call the parent callback to update global auth state
+    if (onAuthSuccess) {
+      onAuthSuccess(data);
+    }
   };
 
   // Handle successful registration
@@ -51,7 +61,9 @@ const Auth = () => {
 
   const handleLogout = () => {
     setUserData(null);
-    setCurrentView('login'); 
+    setCurrentView('login');
+    localStorage.removeItem('userData');
+    localStorage.removeItem('currentView');
   };
 
   switch (currentView) {
