@@ -1,7 +1,7 @@
 import express from "express";
 import cookieParser from "cookie-parser";
 import cors from "cors";
-// import swaggerSetup from "./utils/swagger.js";
+import swaggerSetup from "./utils/swagger.js";
 import { errorHandler } from "./middlewares/errorHandler.middleware.js";
 import dotenv from "dotenv";
 dotenv.config();
@@ -37,7 +37,7 @@ app.use("/api/v1/message", messageRouter);
 
 
 // Swagger
-// swaggerSetup(app);
+swaggerSetup(app);
 app.use(errorHandler);
 
 export { app };
