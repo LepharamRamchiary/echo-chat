@@ -1,27 +1,9 @@
-// import { BrowserRouter, Routes, Route } from 'react-router-dom'
-// import Home from './page/Home'
-// import Auth from './page/Auth'
-// import './index.css'
-
-// function App() {
-//   return (
-//     <BrowserRouter>
-//       <Routes>
-//         <Route path="/" element={<Home/>} />
-//         <Route path="/auth" element={<Auth/>} />
-//       </Routes>
-//     </BrowserRouter>
-//   )
-// }
-
-// export default App
-
-import React, { useState, useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import Navbar from './components/Navbar';
 import Auth from './page/Auth';
 import Dashboard from './components/Dashboard';
-import Home from './page/Home'; // Your home component
+import Home from './page/Home'; 
+import PageNotFound from './page/PageNotFound';
 
 function App() {
   const [user, setUser] = useState(() => {
@@ -42,14 +24,12 @@ function App() {
     return null;
   });
 
-  // Handle user authentication state changes
   const handleAuthSuccess = (authData) => {
     setUser(authData.user);
     setAccessToken(authData.accessToken);
     localStorage.setItem('userData', JSON.stringify(authData));
   };
 
-  // Handle logout
   const handleLogout = () => {
     setUser(null);
     setAccessToken(null);
@@ -62,7 +42,7 @@ function App() {
       <div className="App">
         <Navbar user={user} onLogout={handleLogout} />
         
-        <div className="pt-16"> {/* Add padding-top to account for fixed navbar */}
+        <div className="pt-16"> 
           <Routes>
             <Route path="/" element={<Home />} />
             <Route 
@@ -80,6 +60,7 @@ function App() {
               } 
             />
           </Routes>
+          <Route path="*" element={<NotFound />} />
         </div>
       </div>
     </Router>
