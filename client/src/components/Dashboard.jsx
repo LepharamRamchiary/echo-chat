@@ -10,7 +10,7 @@ const Dashboard = ({ userData, onLogout }) => {
       <div className="p-6 min-h-screen">
         <Message />
       </div>
-      <Footer />
+      {/* <Footer /> */}
     </div>
   );
 };

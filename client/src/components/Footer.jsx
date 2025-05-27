@@ -7,7 +7,7 @@ function Footer() {
         <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
           {/* Company Info */}
           <div className="col-span-1 md:col-span-2">
-            <h3 className="text-2xl font-bold text-blue-400 mb-4">EchoChat</h3>
+            <h3 className="text-2xl font-bold text-blue-400 mb-4">Chat Bot</h3>
             <p className="text-gray-300 mb-4 max-w-md">
               When you send a request, you'll receive the same response twice.
             </p>
@@ -44,7 +44,7 @@ function Footer() {
         {/* Bottom Footer */}
         <div className="border-t border-gray-700 mt-8 pt-8 text-center">
           <p className="text-gray-300">
-            © 2024 EchoChat. All rights reserved. | Privacy Policy | Terms of Service
+            © 2024 Chat Bot. All rights reserved. | Privacy Policy | Terms of Service
           </p>
         </div>
       </div>

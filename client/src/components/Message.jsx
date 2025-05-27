@@ -210,7 +210,7 @@ function Message() {
 
   if (loading) {
     return (
-      <div className="flex flex-col h-96 bg-gray-100 sm:max-w-5xl sm:mx-auto border-l border-r border-gray-300 rounded-lg overflow-hidden shadow-lg">
+      <div className="flex flex-col h-96 sm:mt-24 bg-gray-100 sm:max-w-5xl sm:mx-auto border-l border-r border-gray-300 rounded-lg overflow-hidden shadow-lg">
         <div className="flex-1 flex items-center justify-center">
           <div className="text-gray-500">Loading messages...</div>
         </div>
@@ -220,7 +220,7 @@ function Message() {
 
   return (
     <>
-      <div className="flex flex-col h-96 bg-gray-100 sm:max-w-5xl sm:mx-auto border-l border-r border-gray-300 rounded-lg overflow-hidden shadow-lg">
+      <div className="flex flex-col h-96 sm:mt-24 bg-gray-100 sm:max-w-5xl sm:mx-auto border-l border-r border-gray-300 rounded-lg overflow-hidden shadow-lg">
         <div className="bg-green-500 text-white p-4 flex items-center shadow-md">
           <div className="w-10 h-10 rounded-full bg-green-600 mr-3 flex items-center justify-center">
             <span className="text-white font-semibold">

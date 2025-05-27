@@ -120,7 +120,7 @@ function Navbar() {
               onClick={() => navigate("/")}
               className="text-2xl font-bold text-blue-600 cursor-pointer"
             >
-              EchoChat
+              Chat Bot
             </h1>
           </div>
 
