@@ -37,7 +37,7 @@ function Message() {
     const token = localStorage.getItem("token");
     if (!token) return;
     
-    fetch(`${API_BASE_URL}/user/current-user`, {
+    fetch(`${API_BASE_URL}/api/v1/user/current-user`, {
       headers: {
         Authorization: `Bearer ${token}`,
       },
@@ -61,7 +61,7 @@ function Message() {
       if (!token) return;
 
       setLoading(true);
-      const response = await fetch(`${API_BASE_URL}/message`, {
+      const response = await fetch(`${API_BASE_URL}/api/v1/message`, {
         headers: {
           Authorization: `Bearer ${token}`,
         },
@@ -95,7 +95,7 @@ function Message() {
       const token = localStorage.getItem("token");
       setIsTyping(true);
 
-      const response = await fetch(`${API_BASE_URL}/message/send`, {
+      const response = await fetch(`${API_BASE_URL}/api/v1/message/send`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -148,7 +148,7 @@ function Message() {
   const handleDeleteMessage = async (messageId) => {
     try {
       const token = localStorage.getItem("token");
-      const response = await fetch(`${API_BASE_URL}/message/${messageId}`, {
+      const response = await fetch(`${API_BASE_URL}/api/v1/message/${messageId}`, {
         method: "DELETE",
         headers: {
           Authorization: `Bearer ${token}`,
@@ -166,7 +166,7 @@ function Message() {
   const handleClearAllMessages = async () => {
     try {
       const token = localStorage.getItem("token");
-      const response = await fetch(`${API_BASE_URL}/message/clear-all`, {
+      const response = await fetch(`${API_BASE_URL}/api/v1/message/clear-all`, {
         method: "DELETE",
         headers: {
           Authorization: `Bearer ${token}`,

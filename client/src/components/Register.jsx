@@ -39,7 +39,7 @@ const Register = ({ onSuccess , onLoginClick}) => {
 
   const registerUserAPI = async (userData) => {
     try {
-      const response = await fetch(`${API_BASE_URL}/user/register`, {
+      const response = await fetch(`${API_BASE_URL}/api/v1/user/register`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

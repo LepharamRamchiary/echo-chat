@@ -67,7 +67,7 @@ const OTPVerification = ({ userData, onSuccess, onBackToRegister }) => {
 
   const verifyOTPAPI = async (phoneNumber, otpCode) => {
     try {
-      const response = await fetch(`${API_BASE_URL}/user/verify-otp`, {
+      const response = await fetch(`${API_BASE_URL}/api/v1/user/verify-otp`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -94,7 +94,7 @@ const OTPVerification = ({ userData, onSuccess, onBackToRegister }) => {
 
   const resendOTPAPI = async (phoneNumber, fullname) => {
     try {
-      const response = await fetch(`${API_BASE_URL}/user/register`, {
+      const response = await fetch(`${API_BASE_URL}/api/v1/user/register`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

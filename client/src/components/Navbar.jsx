@@ -14,7 +14,7 @@ const logoutAPI = async () => {
       accessToken = parsedData.accessToken;
     }
 
-    const response = await fetch(`${API_BASE_URL}/user/logout`, {
+    const response = await fetch(`${API_BASE_URL}/api/v1/user/logout`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
