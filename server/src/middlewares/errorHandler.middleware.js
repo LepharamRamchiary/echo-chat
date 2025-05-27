@@ -1,10 +1,7 @@
-// src/middlewares/errorHandler.js
-import { ApiError } from '../utils/apiError.js';
+import { ApiError } from '../utils/ApiError.js';
 
 const errorHandler = (err, req, res, next) => {
-    let error = err;
-
-    // If it's not an ApiError, create one
+    let error = err
     if (!(error instanceof ApiError)) {
         const statusCode = error.statusCode || 500;
         const message = error.message || 'Something went wrong';
