@@ -1,15 +1,17 @@
 import React, { useState } from "react";
 import { Phone, User } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL; 
 
-const Register = ({ onSuccess , onLoginClick}) => {
+const Register = ({ onSuccess, onLoginClick }) => {
   const [formData, setFormData] = useState({
     fullName: "",
     phoneNumber: "",
   });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const navigate = useNavigate();
 
   const handleInputChange = (field, value) => {
     if (field === "phoneNumber") {

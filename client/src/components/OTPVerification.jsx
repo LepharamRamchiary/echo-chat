@@ -203,7 +203,7 @@ const OTPVerification = ({ userData, onSuccess, onBackToRegister }) => {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center p-4 bg-gradient-to-br from-green-50 to-blue-50">
+    <div className="min-h-screen flex items-center justify-center p-4 bg-gradient-to-br from-purple-50 to-blue-50">
       <div className="bg-white rounded-3xl shadow-2xl w-full max-w-md p-8">
         
         {infoMessage && !successMessage && (
@@ -231,7 +231,7 @@ const OTPVerification = ({ userData, onSuccess, onBackToRegister }) => {
           <div className={`rounded-full w-20 h-20 flex items-center justify-center mx-auto mb-4 ${
             isVerified 
               ? 'bg-gradient-to-r from-green-500 to-green-600' 
-              : 'bg-gradient-to-r from-green-500 to-blue-500'
+              : 'bg-gradient-to-r from-purple-500 to-blue-500 rounded-full w-20 h-20 flex items-center justify-center mx-auto mb-4'
           }`}>
             {isVerified ? (
               <CheckCircle className="w-10 h-10 text-white" />
@@ -282,7 +282,7 @@ const OTPVerification = ({ userData, onSuccess, onBackToRegister }) => {
             <button
               onClick={handleVerify}
               disabled={loading || resendLoading || otp.join('').length !== 6}
-              className="w-full bg-gradient-to-r from-green-500 to-blue-500 text-white py-3 rounded-xl font-semibold hover:from-green-600 hover:to-blue-600 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 transform hover:scale-105"
+              className="w-full bg-gradient-to-r from-purple-500 to-blue-500 text-white py-3 rounded-xl font-semibold hover:from-purple-600 hover:to-blue-600 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 transform hover:scale-105"
             >
               {loading ? (
                 <div className="flex items-center justify-center space-x-2">
