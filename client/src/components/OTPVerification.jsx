@@ -267,7 +267,7 @@ const OTPVerification = ({ userData, onSuccess, onBackToRegister }) => {
                   onChange={(e) => handleOtpChange(index, e.target.value)}
                   onKeyDown={(e) => handleKeyDown(index, e)}
                   disabled={loading || resendLoading}
-                  className="w-12 h-12 text-center text-xl font-bold border-2 border-gray-300 rounded-xl focus:ring-2 focus:ring-green-500 focus:border-green-500 outline-none transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="sm:w-12 sm:h-12 h-8 w-8 text-center text-xl font-bold border-2 border-gray-300 rounded-xl focus:ring-2 focus:ring-green-500 focus:border-green-500 outline-none transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
                   maxLength="1"
                 />
               ))}
