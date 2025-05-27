@@ -57,7 +57,7 @@ function Home() {
   if (isloading) {
     return (
       <div className="min-h-screen bg-white">
-        <Navbar user={user} onLogout={handleLogout} isAuthenticated={isAuthenticated} />
+        {/* <Navbar user={user} onLogout={handleLogout} isAuthenticated={isAuthenticated} /> */}
         
         {/* Hero Section with loading state */}
         <section className="pt-16 bg-gradient-to-br from-blue-50 to-indigo-100">
@@ -81,7 +81,7 @@ function Home() {
 
   return (
     <div className="min-h-screen bg-white">
-      <Navbar user={user} onLogout={handleLogout} isAuthenticated={isAuthenticated} />
+      {/* <Navbar user={user} onLogout={handleLogout} isAuthenticated={isAuthenticated} /> */}
       
       {/* Hero Section */}
       <section className="pt-16 bg-gradient-to-br from-blue-50 to-indigo-100">
