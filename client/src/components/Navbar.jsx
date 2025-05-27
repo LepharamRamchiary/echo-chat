@@ -2,7 +2,8 @@ import React, { useState, useEffect } from "react";
 import { Menu, X, User, LogOut } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 
-// Simple API call for logout
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
+
 const logoutAPI = async () => {
   try {
     const userData = localStorage.getItem("userData");
@@ -13,7 +14,7 @@ const logoutAPI = async () => {
       accessToken = parsedData.accessToken;
     }
 
-    const response = await fetch("http://localhost:8000/api/v1/user/logout", {
+    const response = await fetch(`${API_BASE_URL}/user/logout`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -35,7 +36,6 @@ function Navbar() {
   const [user, setUser] = useState(null);
   const navigate = useNavigate();
 
-  // Check for user data in localStorage
   useEffect(() => {
     const checkUserData = () => {
       const stored = localStorage.getItem("userData");
@@ -54,15 +54,12 @@ function Navbar() {
 
     checkUserData();
 
-    // Listen for localStorage changes
     window.addEventListener("storage", checkUserData);
 
     return () => {
       window.removeEventListener("storage", checkUserData);
     };
   }, []);
-
-  // Extract first name from fullname
   const getFirstName = (fullname) => {
     if (!fullname) return "";
     return fullname.split(" ")[0];
@@ -70,7 +67,6 @@ function Navbar() {
 
   const handleLogout = async () => {
     try {
-      // Call the logout API
       const result = await logoutAPI();
 
       if (result.success) {
@@ -81,20 +77,17 @@ function Navbar() {
     } catch (error) {
       console.error("Error during logout:", error);
     } finally {
-      // Always clear local data and redirect, regardless of API response
       localStorage.removeItem("userData");
       localStorage.removeItem("currentView");
       setUser(null);
       setIsUserMenuOpen(false);
       setIsMenuOpen(false);
-
-      // Redirect to home page
       navigate("/");
     }
   };
 
   const handleDashboardClick = () => {
-    navigate("/auth"); // Since your dashboard is handled within Auth component
+    navigate("/auth");
     setIsMenuOpen(false);
     setIsUserMenuOpen(false);
   };
@@ -111,9 +104,7 @@ function Navbar() {
     navigate("/auth");
   };
 
-  // Handle overlay click - but exclude clicks on menu content
   const handleOverlayClick = (e) => {
-    // Only close if clicking directly on the overlay, not on its children
     if (e.target === e.currentTarget) {
       setIsUserMenuOpen(false);
       setIsMenuOpen(false);
@@ -124,7 +115,6 @@ function Navbar() {
     <nav className="bg-white shadow-md fixed w-full top-0 z-50">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center h-16">
-          {/* Logo */}
           <div className="flex-shrink-0">
             <h1
               onClick={() => navigate("/")}
@@ -134,11 +124,9 @@ function Navbar() {
             </h1>
           </div>
 
-          {/* Desktop Navigation */}
           <div className="hidden md:flex items-center space-x-4">
             {user ? (
               <>
-                {/* Dashboard Link */}
                 <button
                   onClick={handleDashboardClick}
                   className="text-gray-700 hover:text-blue-600 px-3 py-2 rounded-md text-sm font-medium transition duration-300"
@@ -146,7 +134,6 @@ function Navbar() {
                   Message
                 </button>
 
-                {/* User Menu */}
                 <div className="relative">
                   <button
                     onClick={() => setIsUserMenuOpen(!isUserMenuOpen)}
@@ -156,7 +143,6 @@ function Navbar() {
                     <span>{getFirstName(user.fullname)}</span>
                   </button>
 
-                  {/* User Dropdown */}
                   {isUserMenuOpen && (
                     <div className="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg py-1 z-50 border">
                       <div className="px-4 py-2 text-sm text-gray-700 border-b">
@@ -183,7 +169,6 @@ function Navbar() {
                 </div>
               </>
             ) : (
-              /* Register Button for non-authenticated users */
               <button
                 onClick={() => navigate("/auth")}
                 className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-md text-sm font-medium transition duration-300"
@@ -193,7 +178,6 @@ function Navbar() {
             )}
           </div>
 
-          {/* Mobile menu button */}
           <div className="md:hidden">
             <button
               onClick={() => setIsMenuOpen(!isMenuOpen)}
@@ -204,19 +188,16 @@ function Navbar() {
           </div>
         </div>
 
-        {/* Mobile Navigation - MOVED OUTSIDE OF OVERLAY */}
         {isMenuOpen && (
           <div className="md:hidden relative z-50">
             <div className="px-2 pt-2 pb-3 space-y-1 sm:px-3 bg-white border-t shadow-lg">
               {user ? (
                 <>
-                  {/* User Info */}
                   <div className="px-4 py-2 text-sm text-gray-700 border-b border-gray-200">
                     <div className="font-medium">{user.fullname || "User"}</div>
                     <div className="text-gray-500">{user.phoneNumber}</div>
                   </div>
 
-                  {/* Dashboard Link */}
                   <button
                     onClick={handleDashboardClick}
                     className="block w-full text-left px-4 py-2 text-base text-gray-700 hover:bg-gray-100 rounded-md"
@@ -224,7 +205,6 @@ function Navbar() {
                     Message
                   </button>
 
-                  {/* Logout Button */}
                   <button
                     onClick={handleLogout}
                     className="flex items-center w-full text-left px-4 py-2 text-base text-gray-700 hover:bg-gray-100 rounded-md"
@@ -234,7 +214,6 @@ function Navbar() {
                   </button>
                 </>
               ) : (
-                /* Fixed Register Button for non-authenticated users */
                 <button
                   onClick={handleMobileRegisterClick}
                   className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-md text-base font-medium w-full text-center transition duration-300 relative z-50"
@@ -247,7 +226,6 @@ function Navbar() {
         )}
       </div>
 
-      {/* Overlay to close dropdowns when clicking outside - MODIFIED */}
       {(isUserMenuOpen || isMenuOpen) && (
         <div
           className="fixed inset-0 z-40"

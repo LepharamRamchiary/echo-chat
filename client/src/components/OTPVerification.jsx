@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { MessageSquare, CheckCircle } from 'lucide-react';
 
-const API_BASE_URL = 'http://localhost:8000/api/v1/user'; 
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL; 
 
 const OTPVerification = ({ userData, onSuccess, onBackToRegister }) => {
   const [otp, setOtp] = useState(['', '', '', '', '', '']); 
@@ -67,7 +67,7 @@ const OTPVerification = ({ userData, onSuccess, onBackToRegister }) => {
 
   const verifyOTPAPI = async (phoneNumber, otpCode) => {
     try {
-      const response = await fetch(`${API_BASE_URL}/verify-otp`, {
+      const response = await fetch(`${API_BASE_URL}/user/verify-otp`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -94,7 +94,7 @@ const OTPVerification = ({ userData, onSuccess, onBackToRegister }) => {
 
   const resendOTPAPI = async (phoneNumber, fullname) => {
     try {
-      const response = await fetch(`${API_BASE_URL}/register`, {
+      const response = await fetch(`${API_BASE_URL}/user/register`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

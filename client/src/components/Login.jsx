@@ -1,14 +1,12 @@
 import React, { useState } from 'react';
-import { LogIn, Phone, User, Eye, EyeOff } from 'lucide-react';
+import { LogIn, User, Eye, EyeOff } from 'lucide-react';
 
-// API configuration
-const API_BASE_URL = 'http://localhost:8000/api/v1/user'; // Update this to your backend URL
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL; 
 
-// Login Component
 const Login = ({ onSuccess, onRegisterClick }) => {
   const [formData, setFormData] = useState({
     phoneNumber: '',
-    fullname: '' // Optional field based on your backend
+    fullname: '' 
   });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
@@ -16,13 +14,12 @@ const Login = ({ onSuccess, onRegisterClick }) => {
 
   const handleInputChange = (field, value) => {
     if (field === 'phoneNumber') {
-      // Only allow digits and limit to 10
       const digits = value.replace(/\D/g, '').substring(0, 10);
       setFormData(prev => ({ ...prev, [field]: digits }));
     } else {
       setFormData(prev => ({ ...prev, [field]: value }));
     }
-    setError(''); // Clear error when user types
+    setError(''); 
   };
 
   const validateForm = () => {
@@ -33,18 +30,17 @@ const Login = ({ onSuccess, onRegisterClick }) => {
     return true;
   };
 
-  // API call function for login
   const loginUserAPI = async (userData) => {
     try {
-      const response = await fetch(`${API_BASE_URL}/login`, {
+      const response = await fetch(`${API_BASE_URL}/user/login`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        credentials: 'include', // Include cookies if needed
+        credentials: 'include', 
         body: JSON.stringify({
           phoneNumber: userData.phoneNumber,
-          fullname: userData.fullname || undefined // Include fullname if provided
+          fullname: userData.fullname || undefined 
         }),
       });
 
@@ -72,15 +68,11 @@ const Login = ({ onSuccess, onRegisterClick }) => {
       
       console.log('Login successful:', apiResponse);
       
-      // Store token if needed (you might want to use a context or state management)
       if (apiResponse.data.accessToken) {
-        // You can store in sessionStorage or context
         await localStorage.setItem('token', apiResponse.data.accessToken);
-        // sessionStorage.setItem('accessToken', apiResponse.data.accessToken);
         console.log('Access Token:', apiResponse.data.accessToken);
       }
       
-      // Call the onSuccess callback with the response data
       if (onSuccess) {
         onSuccess({
           user: apiResponse.data.user,
@@ -89,7 +81,6 @@ const Login = ({ onSuccess, onRegisterClick }) => {
         });
       }
     } catch (err) {
-      // Handle different types of errors
       let errorMessage = 'Login failed. Please try again.';
       
       if (err.message.includes('404')) {

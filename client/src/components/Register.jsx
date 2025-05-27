@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { Phone, User } from "lucide-react";
 
-const API_BASE_URL = "http://localhost:8000/api/v1/user";
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL; 
 
 const Register = ({ onSuccess , onLoginClick}) => {
   const [formData, setFormData] = useState({
@@ -39,7 +39,7 @@ const Register = ({ onSuccess , onLoginClick}) => {
 
   const registerUserAPI = async (userData) => {
     try {
-      const response = await fetch(`${API_BASE_URL}/register`, {
+      const response = await fetch(`${API_BASE_URL}/user/register`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -75,10 +75,8 @@ const Register = ({ onSuccess , onLoginClick}) => {
     try {
       const apiResponse = await registerUserAPI(formData);
 
-      // Success - OTP has been sent
       console.log("Registration successful:", apiResponse);
 
-      // Call the onSuccess callback with the response data
       if (onSuccess) {
         onSuccess({
           ...formData,
@@ -87,7 +85,6 @@ const Register = ({ onSuccess , onLoginClick}) => {
         });
       }
     } catch (err) {
-      // Handle different types of errors
       let errorMessage = "Failed to register. Please try again.";
 
       if (
