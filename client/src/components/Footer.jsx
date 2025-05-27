@@ -44,7 +44,7 @@ function Footer() {
         {/* Bottom Footer */}
         <div className="border-t border-gray-700 mt-8 pt-8 text-center">
           <p className="text-gray-300">
-            © 2024 YourLogo. All rights reserved. | Privacy Policy | Terms of Service
+            © 2024 EchoChat. All rights reserved. | Privacy Policy | Terms of Service
           </p>
         </div>
       </div>
