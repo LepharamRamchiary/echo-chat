@@ -1,20 +1,10 @@
 import React, { useState } from "react";
 import Footer from "../components/Footer";
 import Navbar from "../components/Navbar";
-import { useNavigate } from "react-router-dom";
+
 
 function Home() {
-  const navigate = useNavigate();
-
-  const handleGetStarted = () => {
-    const token = localStorage.getItem("token");
-    if (token) {
-      navigate("dashboard");
-    } else {
-      navigate("login");
-    }
-  };
-
+  
   return (
     <div className="min-h-screen bg-white">
       <Navbar />
@@ -29,11 +19,6 @@ function Home() {
             <p className="text-lg sm:text-xl text-gray-600 mb-8 max-w-3xl mx-auto">
               Hi there! Just a heads-up — when you send a request, you'll receive the same response twice. So don’t be surprised if you see duplicate replies like this. It’s part of how the system currently works!
             </p>
-            <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
-              <button onClick={handleGetStarted} className="bg-blue-600 hover:bg-blue-700 text-white px-8 py-3 rounded-lg text-lg font-semibold transition duration-300 transform hover:scale-105 w-full sm:w-auto">
-                Get Started
-              </button>
-            </div>
           </div>
         </div>
       </section>
