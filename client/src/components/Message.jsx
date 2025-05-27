@@ -323,7 +323,7 @@ function Message() {
                   {message.sender === "me" && (
                     <button
                       onClick={() => handleDeleteClick(message.id)}
-                      className="ml-2 opacity-0 group-hover:opacity-100 transition-opacity p-1 hover:bg-red-100 rounded"
+                      className="ml-1 opacity-0 group-hover:opacity-100 transition-opacity p-1 hover:bg-red-100 rounded"
                     >
                       <svg
                         xmlns="http://www.w3.org/2000/svg"
