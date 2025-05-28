@@ -96,7 +96,7 @@ function Home({ user, isAuthenticated, onLogout }) {
 
   return (
     <div className="min-h-screen bg-white">
-      <section className="bg-gradient-to-br from-blue-50 to-indigo-100">
+      <section className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12">
           <div className="text-center mb-8 sm:mb-12">
             <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-gray-900 mb-4">
@@ -136,7 +136,7 @@ function Home({ user, isAuthenticated, onLogout }) {
                 </svg>
               </div>
               <h3 className="text-lg font-semibold text-gray-900 mb-2">Lightning Fast</h3>
-              <p className="text-gray-600 text-sm">Get instant responses powered by advanced AI technology for seamless communication.</p>
+              <p className="text-gray-600 text-sm">Get instant dual responses through our seamless communication API.</p>
             </div>
 
             {/* Card 3 */}
