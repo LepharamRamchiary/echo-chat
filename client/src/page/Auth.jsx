@@ -1,56 +1,55 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { useLocation, useNavigate } from 'react-router-dom';
+import { useLocation, useNavigate, useSearchParams } from 'react-router-dom';
 import Register from '../components/Register';
 import OTPVerification from '../components/OTPVerification';
 import Dashboard from '../components/Dashboard';
 import Login from '../components/Login';
 
+// Safe localStorage access utility (move to separate file if reused)
+const safeLocalStorage = {
+  getItem: (key) => {
+    try {
+      if (typeof window !== 'undefined' && window.localStorage) {
+        return localStorage.getItem(key);
+      }
+    } catch (error) {
+      console.warn('localStorage access failed:', error);
+    }
+    return null;
+  },
+  setItem: (key, value) => {
+    try {
+      if (typeof window !== 'undefined' && window.localStorage) {
+        localStorage.setItem(key, value);
+      }
+    } catch (error) {
+      console.warn('localStorage write failed:', error);
+    }
+  },
+  removeItem: (key) => {
+    try {
+      if (typeof window !== 'undefined' && window.localStorage) {
+        localStorage.removeItem(key);
+      }
+    } catch (error) {
+      console.warn('localStorage remove failed:', error);
+    }
+  }
+};
+
 const Auth = ({ onAuthSuccess }) => {
-  const location = useLocation();
+  const [searchParams] = useSearchParams();
   const navigate = useNavigate();
   
-  // Helper function to safely access localStorage
-  const safeLocalStorage = {
-    getItem: (key) => {
-      try {
-        if (typeof window !== 'undefined' && window.localStorage) {
-          return localStorage.getItem(key);
-        }
-      } catch (error) {
-        console.warn('localStorage access failed:', error);
-      }
-      return null;
-    },
-    setItem: (key, value) => {
-      try {
-        if (typeof window !== 'undefined' && window.localStorage) {
-          localStorage.setItem(key, value);
-        }
-      } catch (error) {
-        console.warn('localStorage write failed:', error);
-      }
-    },
-    removeItem: (key) => {
-      try {
-        if (typeof window !== 'undefined' && window.localStorage) {
-          localStorage.removeItem(key);
-        }
-      } catch (error) {
-        console.warn('localStorage remove failed:', error);
-      }
-    }
-  };
-
-  // Get initial view from URL params
+  // Get initial view from URL params or auth state
   const getInitialView = useCallback(() => {
-    const queryParams = new URLSearchParams(location.search);
-    const urlView = queryParams.get('view');
+    const urlView = searchParams.get('view');
     
     if (urlView && ['login', 'register', 'otp', 'dashboard'].includes(urlView)) {
       return urlView;
     }
     
-    // Check if user is already authenticated
+    // Check authentication state
     const storedToken = safeLocalStorage.getItem('token');
     const storedUserData = safeLocalStorage.getItem('userData');
     
@@ -60,6 +59,7 @@ const Auth = ({ onAuthSuccess }) => {
         if (userData.isVerified) {
           return 'dashboard';
         }
+        return 'otp'; // If not verified but has data
       } catch (error) {
         console.warn('Invalid stored user data:', error);
         safeLocalStorage.removeItem('userData');
@@ -67,100 +67,68 @@ const Auth = ({ onAuthSuccess }) => {
       }
     }
     
-    return 'login';
-  }, [location.search]);
+    return 'login'; // Default view
+  }, [searchParams]);
 
-  const [currentView, setCurrentView] = useState(getInitialView);
-  const [userData, setUserData] = useState(() => {
-    const stored = safeLocalStorage.getItem('userData');
-    if (stored) {
+  const [currentView, setCurrentView] = useState(() => getInitialView());
+  const [userData, setUserData] = useState(null);
+  const [authToken, setAuthToken] = useState(null);
+  const [isInitialized, setIsInitialized] = useState(false);
+
+  // Initialize auth state from storage
+  useEffect(() => {
+    const token = safeLocalStorage.getItem('token');
+    const userDataStr = safeLocalStorage.getItem('userData');
+    
+    if (token) setAuthToken(token);
+    if (userDataStr) {
       try {
-        return JSON.parse(stored);
+        setUserData(JSON.parse(userDataStr));
       } catch (error) {
-        console.warn('Invalid stored user data:', error);
+        console.warn('Failed to parse user data:', error);
         safeLocalStorage.removeItem('userData');
       }
     }
-    return null;
-  });
-
-  const [authToken, setAuthToken] = useState(() => {
-    return safeLocalStorage.getItem('token') || null;
-  });
-
-  const [isNavigating, setIsNavigating] = useState(false);
-
-  // Update view when URL changes
-  useEffect(() => {
-    const queryParams = new URLSearchParams(location.search);
-    const urlView = queryParams.get('view');
     
-    if (urlView && ['login', 'register', 'otp', 'dashboard'].includes(urlView) && urlView !== currentView) {
-      setCurrentView(urlView);
-    }
-  }, [location.search, currentView]);
+    setIsInitialized(true);
+  }, []);
 
-  // Handle authentication state changes
+  // Handle view changes based on authentication
   useEffect(() => {
-    const handleStorageChange = () => {
-      const stored = safeLocalStorage.getItem('userData');
-      const token = safeLocalStorage.getItem('token');
-      
-      if (!stored || !token) {
-        setUserData(null);
-        setAuthToken(null);
-        if (currentView === 'dashboard') {
-          setCurrentView('login');
-          navigate('/auth?view=login', { replace: true });
-        }
-      }
-    };
+    if (!isInitialized) return;
 
-    // Listen for storage changes (for multiple tabs)
-    window.addEventListener('storage', handleStorageChange);
-    window.addEventListener('userDataChanged', handleStorageChange);
-    
-    return () => {
-      window.removeEventListener('storage', handleStorageChange);
-      window.removeEventListener('userDataChanged', handleStorageChange);
-    };
-  }, [currentView, navigate]);
-
-  // Persist data to localStorage
-  useEffect(() => {
-    if (userData) {
-      safeLocalStorage.setItem('userData', JSON.stringify(userData));
+    // If authenticated and verified, go to dashboard
+    if (authToken && userData?.isVerified && currentView !== 'dashboard') {
+      setCurrentView('dashboard');
+      navigate('/dashboard', { replace: true });
+      return;
     }
-  }, [userData]);
 
-  useEffect(() => {
-    if (authToken) {
-      safeLocalStorage.setItem('token', authToken);
-    } else {
-      safeLocalStorage.removeItem('token');
+    // If has user data but not verified, go to OTP
+    if (userData && !userData.isVerified && currentView !== 'otp') {
+      setCurrentView('otp');
+      navigate('/auth?view=otp', { replace: true });
+      return;
     }
-  }, [authToken]);
 
-  // Navigation helper with loading state
-  const navigateWithLoading = useCallback((path) => {
-    setIsNavigating(true);
-    // Small delay to ensure state updates are processed
-    setTimeout(() => {
-      navigate(path, { replace: true });
-      setIsNavigating(false);
-    }, 10);
-  }, [navigate]);
+    // Default to login if no auth
+    if (!authToken && currentView !== 'login' && currentView !== 'register') {
+      setCurrentView('login');
+      navigate('/auth?view=login', { replace: true });
+    }
+  }, [authToken, userData, currentView, navigate, isInitialized]);
 
+  // Event handlers
   const handleLoginSuccess = useCallback((data) => {
     const formattedData = {
       user: data.user || {
         fullname: data.fullname,
         phoneNumber: data.phoneNumber,
-        isVerified: true,
+        isVerified: data.isVerified || true,
         ...data.user
       },
       accessToken: data.accessToken,
-      isVerified: true
+      isVerified: data.isVerified || true
     };
     
     setUserData(formattedData);
@@ -173,12 +141,14 @@ const Auth = ({ onAuthSuccess }) => {
       onAuthSuccess(formattedData);
     }
     
-    setCurrentView('dashboard');
-    navigateWithLoading('/dashboard');
-  }, [onAuthSuccess, navigateWithLoading]);
+    if (formattedData.isVerified) {
+      navigate('/dashboard', { replace: true });
+    } else {
+      navigate('/auth?view=otp', { replace: true });
+    }
+  }, [onAuthSuccess, navigate]);
 
   const handleRegistrationSuccess = useCallback((data) => {
-    console.log('Registration successful:', data);
     const registrationData = {
       fullname: data.fullName,
       phoneNumber: data.phoneNumber,
@@ -187,21 +157,21 @@ const Auth = ({ onAuthSuccess }) => {
     };
     
     setUserData(registrationData);
-    setCurrentView('otp');
-    navigateWithLoading('/auth?view=otp');
-  }, [navigateWithLoading]);
+    safeLocalStorage.setItem('userData', JSON.stringify(registrationData));
+    navigate('/auth?view=otp', { replace: true });
+  }, [navigate]);
 
   const handleOTPSuccess = useCallback((data) => {
     const completeUserData = {
+      ...userData,
       user: {
-        fullname: userData?.fullName || userData?.fullname, 
+        fullname: userData?.fullname,
         phoneNumber: userData?.phoneNumber,
         isVerified: true,
         ...data.user
       },
       accessToken: data.accessToken,
-      isVerified: true,
-      message: data.message
+      isVerified: true
     };
     
     setUserData(completeUserData);
@@ -214,56 +184,39 @@ const Auth = ({ onAuthSuccess }) => {
       onAuthSuccess(completeUserData);
     }
     
-    setCurrentView('dashboard');
-    navigateWithLoading('/dashboard');
-  }, [userData, onAuthSuccess, navigateWithLoading]);
-
-  const handleSwitchToRegister = useCallback(() => {
-    setCurrentView('register');
-    navigateWithLoading('/auth?view=register');
-  }, [navigateWithLoading]);
-
-  const handleSwitchToLogin = useCallback(() => {
-    setCurrentView('login');
-    navigateWithLoading('/auth?view=login');
-  }, [navigateWithLoading]);
-
-  const handleBackToRegister = useCallback(() => {
-    setCurrentView('register');
-    navigateWithLoading('/auth?view=register');
-  }, [navigateWithLoading]);
+    navigate('/dashboard', { replace: true });
+  }, [userData, onAuthSuccess, navigate]);
 
   const handleLogout = useCallback(() => {
     setUserData(null);
     setAuthToken(null);
-    setCurrentView('login');
     
     safeLocalStorage.removeItem('userData');
     safeLocalStorage.removeItem('token');
     
-    window.dispatchEvent(new Event('userDataChanged'));
+    // Dispatch event to sync other tabs
+    window.dispatchEvent(new Event('storage'));
     
-    navigateWithLoading('/auth?view=login');
-  }, [navigateWithLoading]);
+    navigate('/auth?view=login', { replace: true });
+  }, [navigate]);
 
-  // Auto-redirect to dashboard if authenticated
-  useEffect(() => {
-    if (authToken && userData?.isVerified && currentView !== 'dashboard' && !isNavigating) {
-      setCurrentView('dashboard');
-      navigateWithLoading('/dashboard');
-    }
-  }, [authToken, userData, currentView, isNavigating, navigateWithLoading]);
+  // Navigation helpers
+  const navigateToRegister = useCallback(() => {
+    navigate('/auth?view=register', { replace: true });
+  }, [navigate]);
 
-  // Show loading state during navigation
-  if (isNavigating) {
+  const navigateToLogin = useCallback(() => {
+    navigate('/auth?view=login', { replace: true });
+  }, [navigate]);
+
+  const navigateBackToRegister = useCallback(() => {
+    navigate('/auth?view=register', { replace: true });
+  }, [navigate]);
+
+  // Render appropriate component based on currentView
+  if (!isInitialized) {
     return (
-      <div style={{ 
-        display: 'flex', 
-        justifyContent: 'center', 
-        alignItems: 'center', 
-        height: '100vh',
-        backgroundColor: '#f5f5f5'
-      }}>
+      <div className="auth-loading">
         <div>Loading...</div>
       </div>
     );
@@ -274,7 +227,7 @@ const Auth = ({ onAuthSuccess }) => {
       return (
         <Login 
           onSuccess={handleLoginSuccess}
-          onRegisterClick={handleSwitchToRegister}
+          onRegisterClick={navigateToRegister}
         />
       );
       
@@ -282,34 +235,33 @@ const Auth = ({ onAuthSuccess }) => {
       return (
         <Register 
           onSuccess={handleRegistrationSuccess}
-          onLoginClick={handleSwitchToLogin}
+          onLoginClick={navigateToLogin}
         />
       );
       
     case 'otp':
-      return (
+      return userData ? (
         <OTPVerification 
           userData={userData}
           onSuccess={handleOTPSuccess}
-          onBackToRegister={handleBackToRegister}
+          onBack={navigateBackToRegister}
         />
+      ) : (
+        navigateToLogin()
       );
       
     case 'dashboard':
-      return (
+      return authToken ? (
         <Dashboard 
           userData={userData}
           onLogout={handleLogout}
         />
+      ) : (
+        navigateToLogin()
       );
       
     default:
-      return (
-        <Login 
-          onSuccess={handleLoginSuccess}
-          onRegisterClick={handleSwitchToRegister}
-        />
-      );
+      return navigateToLogin();
   }
 };
 
