@@ -103,7 +103,7 @@ const Auth = ({ onAuthSuccess }) => {
   const handleOTPSuccess = (data) => {
     const completeUserData = {
       user: {
-        fullname: userData.fullName || userData.fullname, 
+        fullname: userData.fullname, 
         phoneNumber: userData.phoneNumber,
         isVerified: true,
         ...data.user
