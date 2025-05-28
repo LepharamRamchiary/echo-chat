@@ -1,7 +1,5 @@
 import { useState, useEffect } from "react";
-// In App.js
-import { HashRouter as Router, Routes, Route, Navigate } from "react-router-dom";
-// Replace BrowserRouter with HashRouter for better mobile compatibility
+import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-dom";
 import Navbar from "./components/Navbar";
 import Footer from "./components/Footer";
 import Auth from "./page/Auth";
@@ -10,9 +8,6 @@ import Home from "./page/Home";
 import PageNotFound from "./page/PageNotFound";
 
 function App() {
-  const [baseUrl] = useState(() => {
-    return window.location.pathname.split('/')[1] || '';
-  });
   const [user, setUser] = useState(() => {
     const stored = localStorage.getItem("userData");
     if (stored) {
@@ -102,7 +97,7 @@ function App() {
   const isAuthenticated = user && accessToken && user.isVerified !== false;
 
   return (
-    <Router basename={baseUrl}>
+    <Router>
       <div className="App">
         <Navbar user={user} onLogout={handleLogout} isAuthenticated={isAuthenticated} />
         <div className="pt-16">
