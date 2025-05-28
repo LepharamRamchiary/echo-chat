@@ -43,26 +43,46 @@ function Home({ user, isAuthenticated, onLogout }) {
     };
   }, []);
 
-  const handleGetStarted = () => {
-    const userData = localStorage.getItem("userData");
-    let isLoggedIn = false;
+  // const handleGetStarted = () => {
+  //   const userData = localStorage.getItem("userData");
+  //   let isLoggedIn = false;
     
-    try {
-      if (userData) {
-        const parsedData = JSON.parse(userData);
-        isLoggedIn = parsedData && parsedData.accessToken && parsedData.user;
-      }
-    } catch (error) {
-      isLoggedIn = false;
-    }
+  //   try {
+  //     if (userData) {
+  //       const parsedData = JSON.parse(userData);
+  //       isLoggedIn = parsedData && parsedData.accessToken && parsedData.user;
+  //     }
+  //   } catch (error) {
+  //     isLoggedIn = false;
+  //   }
     
-    if (isLoggedIn) {
-      navigate('/dashboard');
-    } else {
-      navigate('/auth?view=register');
-    }
-  };
+  //   if (isLoggedIn) {
+  //     navigate('/dashboard');
+  //   } else {
+  //     navigate('/auth?view=register');
+  //   }
+  // };
 
+  const handleGetStarted = () => {
+  const userData = localStorage.getItem("userData");
+  let isLoggedIn = false;
+  
+  try {
+    if (userData) {
+      const parsedData = JSON.parse(userData);
+      isLoggedIn = parsedData && parsedData.accessToken && parsedData.user;
+    }
+  } catch (error) {
+    isLoggedIn = false;
+  }
+  
+  if (isLoggedIn) {
+    window.location.href = '/dashboard'; // Full page reload for mobile
+  } else {
+    window.location.href = '/auth?view=register'; // Full page reload for mobile
+  }
+};
+ 
   useEffect(() => {
     console.log('Home - Props updated:', { 
       isAuthenticated, 
