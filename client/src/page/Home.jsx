@@ -1,66 +1,81 @@
-import Footer from "../components/Footer";
-import Navbar from "../components/Navbar";
 import { useNavigate } from 'react-router-dom';
 import { useState, useEffect } from 'react';
 
-function Home() {
+function Home({ user, isAuthenticated, onLogout }) {
   const navigate = useNavigate();
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
-  const [user, setUser] = useState(null);
-  const [isloading, setIsLoading] = useState(true);
+  const [isLoading, setIsLoading] = useState(true);
 
-  // Check authentication status on component mount
+  const checkAuthStatus = () => {
+    try {
+      const userData = localStorage.getItem("userData");
+      
+      if (userData) {
+        const parsedData = JSON.parse(userData);
+      } else {
+        console.log('Home - No user data found');
+      }
+    } catch (error) {
+      localStorage.removeItem("userData");
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   useEffect(() => {
-    const checkAuthStatus = () => {
-      try {
-        const userData = localStorage.getItem("userData");
-        if (userData) {
-          const parsedData = JSON.parse(userData);
-          setUser(parsedData);
-          setIsAuthenticated(true);
-        } else {
-          setIsAuthenticated(false);
-          setUser(null);
-        }
-      } catch (error) {
-        console.error("Error parsing user data:", error);
-        setIsAuthenticated(false);
-        setUser(null);
-      } finally {
-        setIsLoading(false);
+    checkAuthStatus();
+    const handleStorageChange = (e) => {
+      console.log('Home - Storage change detected:', e.key);
+      if (e.key === 'userData' || e.key === null) {
+        checkAuthStatus();
       }
     };
 
-    checkAuthStatus();
+    const handleUserDataChange = () => {
+      checkAuthStatus();
+    };
+
+    window.addEventListener('storage', handleStorageChange);
+    window.addEventListener('userDataChanged', handleUserDataChange);
+    
+    return () => {
+      window.removeEventListener('storage', handleStorageChange);
+      window.removeEventListener('userDataChanged', handleUserDataChange);
+    };
   }, []);
 
   const handleGetStarted = () => {
-    console.log('Get Started clicked, isAuthenticated:', isAuthenticated);
+    const userData = localStorage.getItem("userData");
+    let isLoggedIn = false;
     
-    if (isAuthenticated) {
-      // User is logged in, navigate to dashboard
+    try {
+      if (userData) {
+        const parsedData = JSON.parse(userData);
+        isLoggedIn = parsedData && parsedData.accessToken && parsedData.user;
+      }
+    } catch (error) {
+      isLoggedIn = false;
+    }
+    
+    if (isLoggedIn) {
       navigate('/dashboard');
     } else {
-      // User is not logged in, navigate to register
       navigate('/auth?view=register');
     }
   };
 
-  const handleLogout = () => {
-    // Clear localStorage and state
-    localStorage.removeItem("userData");
-    setUser(null);
-    setIsAuthenticated(false);
-  };
+  useEffect(() => {
+    console.log('Home - Props updated:', { 
+      isAuthenticated, 
+      user: user?.fullname || 'null', 
+      isLoading 
+    });
+  }, [isAuthenticated, user, isLoading]);
 
-  // Show loading state briefly to prevent button flashing
-  if (isloading) {
+  if (isLoading) {
     return (
       <div className="min-h-screen bg-white">
-        {/* <Navbar user={user} onLogout={handleLogout} isAuthenticated={isAuthenticated} /> */}
-        
         {/* Hero Section with loading state */}
-        <section className="pt-16 bg-gradient-to-br from-blue-50 to-indigo-100">
+        <section className="bg-gradient-to-br from-blue-50 to-indigo-100">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12">
             <div className="text-center mb-8 sm:mb-12">
               <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-gray-900 mb-4">
@@ -81,10 +96,7 @@ function Home() {
 
   return (
     <div className="min-h-screen bg-white">
-      {/* <Navbar user={user} onLogout={handleLogout} isAuthenticated={isAuthenticated} /> */}
-      
-      {/* Hero Section */}
-      <section className="pt-16 bg-gradient-to-br from-blue-50 to-indigo-100">
+      <section className="bg-gradient-to-br from-blue-50 to-indigo-100">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12">
           <div className="text-center mb-8 sm:mb-12">
             <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-gray-900 mb-4">
@@ -99,7 +111,7 @@ function Home() {
               onClick={handleGetStarted} 
               className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg text-base font-semibold transition duration-300 transform hover:scale-105 w-full sm:w-auto max-w-xs sm:max-w-none"
             >
-              {isAuthenticated ? 'Go to Dashboard' : 'Get Started'}
+              {isAuthenticated && user ? 'Go to Dashboard' : 'Get Started'}
             </button>
           </div>
 
@@ -162,8 +174,6 @@ function Home() {
           </div>
         </div>
       </section>
-      
-      {/* <Footer /> */}
     </div>
   );
 }

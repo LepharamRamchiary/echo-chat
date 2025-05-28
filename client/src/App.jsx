@@ -13,7 +13,7 @@ function App() {
     if (stored) {
       try {
         const userData = JSON.parse(stored);
-        return userData?.user || userData || null; // Handle both formats
+        return userData?.user || userData || null; 
       } catch (error) {
         console.error("Error parsing stored user data:", error);
         localStorage.removeItem("userData");
@@ -34,7 +34,7 @@ function App() {
         return null;
       }
     }
-    return localStorage.getItem("token") || null; // Also check token storage
+    return localStorage.getItem("token") || null; 
   });
 
   // Sync with localStorage changes
@@ -57,7 +57,6 @@ function App() {
       }
     };
 
-    // Listen for custom events as well as storage events
     window.addEventListener('storage', handleStorageChange);
     window.addEventListener('userDataChanged', handleStorageChange);
     
@@ -68,50 +67,51 @@ function App() {
   }, []);
 
   const handleAuthSuccess = (authData) => {
-    console.log('Auth success in App:', authData);
+
     const userData = authData.user || authData;
     const token = authData.accessToken;
     
     setUser(userData);
     setAccessToken(token);
     
-    // Ensure localStorage is updated
     localStorage.setItem("userData", JSON.stringify(authData));
     if (token) {
       localStorage.setItem("token", token);
     }
     
-    // Trigger custom event to notify other components
     window.dispatchEvent(new Event('userDataChanged'));
   };
 
   const handleLogout = () => {
-    console.log('Logout initiated in App');
     
-    // Clear state first
     setUser(null);
     setAccessToken(null);
     
-    // Clear localStorage
     localStorage.removeItem("userData");
     localStorage.removeItem("currentView");
     localStorage.removeItem("token");
     
-    // Trigger custom event to notify other components
     window.dispatchEvent(new Event('userDataChanged'));
   };
 
-  // Check if user is authenticated
   const isAuthenticated = user && accessToken && user.isVerified !== false;
 
   return (
     <Router>
       <div className="App">
         <Navbar user={user} onLogout={handleLogout} isAuthenticated={isAuthenticated} />
-
         <div className="pt-16">
           <Routes>
-            <Route path="/" element={<Home />} />
+            <Route 
+              path="/" 
+              element={
+                <Home 
+                  user={user} 
+                  isAuthenticated={isAuthenticated} 
+                  onLogout={handleLogout} 
+                />
+              } 
+            />
             <Route
               path="/auth"
               element={
@@ -135,8 +135,8 @@ function App() {
             <Route path="*" element={<PageNotFound />} />
           </Routes>
         </div>
+        <Footer />
       </div>
-      <Footer />
     </Router>
   );
 }
