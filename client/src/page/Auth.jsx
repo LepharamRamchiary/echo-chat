@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import Register from '../components/Register';
 import OTPVerification from '../components/OTPVerification';
@@ -9,60 +9,149 @@ const Auth = ({ onAuthSuccess }) => {
   const location = useLocation();
   const navigate = useNavigate();
   
-  const queryParams = new URLSearchParams(location.search);
-  const urlView = queryParams.get('view');
-  
-  const [currentView, setCurrentView] = useState(() => {
-    return urlView || localStorage.getItem('currentView') || 'login';
-  });
-  
+  // Helper function to safely access localStorage
+  const safeLocalStorage = {
+    getItem: (key) => {
+      try {
+        if (typeof window !== 'undefined' && window.localStorage) {
+          return localStorage.getItem(key);
+        }
+      } catch (error) {
+        console.warn('localStorage access failed:', error);
+      }
+      return null;
+    },
+    setItem: (key, value) => {
+      try {
+        if (typeof window !== 'undefined' && window.localStorage) {
+          localStorage.setItem(key, value);
+        }
+      } catch (error) {
+        console.warn('localStorage write failed:', error);
+      }
+    },
+    removeItem: (key) => {
+      try {
+        if (typeof window !== 'undefined' && window.localStorage) {
+          localStorage.removeItem(key);
+        }
+      } catch (error) {
+        console.warn('localStorage remove failed:', error);
+      }
+    }
+  };
+
+  // Get initial view from URL params
+  const getInitialView = useCallback(() => {
+    const queryParams = new URLSearchParams(location.search);
+    const urlView = queryParams.get('view');
+    
+    if (urlView && ['login', 'register', 'otp', 'dashboard'].includes(urlView)) {
+      return urlView;
+    }
+    
+    // Check if user is already authenticated
+    const storedToken = safeLocalStorage.getItem('token');
+    const storedUserData = safeLocalStorage.getItem('userData');
+    
+    if (storedToken && storedUserData) {
+      try {
+        const userData = JSON.parse(storedUserData);
+        if (userData.isVerified) {
+          return 'dashboard';
+        }
+      } catch (error) {
+        console.warn('Invalid stored user data:', error);
+        safeLocalStorage.removeItem('userData');
+        safeLocalStorage.removeItem('token');
+      }
+    }
+    
+    return 'login';
+  }, [location.search]);
+
+  const [currentView, setCurrentView] = useState(getInitialView);
   const [userData, setUserData] = useState(() => {
-    const stored = localStorage.getItem('userData');
-    return stored ? JSON.parse(stored) : null;
+    const stored = safeLocalStorage.getItem('userData');
+    if (stored) {
+      try {
+        return JSON.parse(stored);
+      } catch (error) {
+        console.warn('Invalid stored user data:', error);
+        safeLocalStorage.removeItem('userData');
+      }
+    }
+    return null;
   });
 
   const [authToken, setAuthToken] = useState(() => {
-    return localStorage.getItem('token') || null;
+    return safeLocalStorage.getItem('token') || null;
   });
 
+  const [isNavigating, setIsNavigating] = useState(false);
+
+  // Update view when URL changes
   useEffect(() => {
-    if (urlView && urlView !== currentView) {
+    const queryParams = new URLSearchParams(location.search);
+    const urlView = queryParams.get('view');
+    
+    if (urlView && ['login', 'register', 'otp', 'dashboard'].includes(urlView) && urlView !== currentView) {
       setCurrentView(urlView);
     }
-  }, [urlView, currentView]);
+  }, [location.search, currentView]);
 
+  // Handle authentication state changes
   useEffect(() => {
-    const handleUserDataChange = () => {
-      const stored = localStorage.getItem('userData');
-      const token = localStorage.getItem('token');
+    const handleStorageChange = () => {
+      const stored = safeLocalStorage.getItem('userData');
+      const token = safeLocalStorage.getItem('token');
       
-      if (!stored && !token) {
+      if (!stored || !token) {
         setUserData(null);
         setAuthToken(null);
-        setCurrentView('login');
+        if (currentView === 'dashboard') {
+          setCurrentView('login');
+          navigate('/auth?view=login', { replace: true });
+        }
       }
     };
 
-    window.addEventListener('userDataChanged', handleUserDataChange);
-    return () => window.removeEventListener('userDataChanged', handleUserDataChange);
-  }, []);
+    // Listen for storage changes (for multiple tabs)
+    window.addEventListener('storage', handleStorageChange);
+    window.addEventListener('userDataChanged', handleStorageChange);
+    
+    return () => {
+      window.removeEventListener('storage', handleStorageChange);
+      window.removeEventListener('userDataChanged', handleStorageChange);
+    };
+  }, [currentView, navigate]);
 
+  // Persist data to localStorage
   useEffect(() => {
-    localStorage.setItem('currentView', currentView);
     if (userData) {
-      localStorage.setItem('userData', JSON.stringify(userData));
+      safeLocalStorage.setItem('userData', JSON.stringify(userData));
     }
-  }, [currentView, userData]);
+  }, [userData]);
 
   useEffect(() => {
     if (authToken) {
-      localStorage.setItem('token', authToken);
+      safeLocalStorage.setItem('token', authToken);
     } else {
-      localStorage.removeItem('token');
+      safeLocalStorage.removeItem('token');
     }
   }, [authToken]);
 
-  const handleLoginSuccess = (data) => {
+  // Navigation helper with loading state
+  const navigateWithLoading = useCallback((path) => {
+    setIsNavigating(true);
+    // Small delay to ensure state updates are processed
+    setTimeout(() => {
+      navigate(path, { replace: true });
+      setIsNavigating(false);
+    }, 10);
+  }, [navigate]);
+
+  const handleLoginSuccess = useCallback((data) => {
     const formattedData = {
       user: data.user || {
         fullname: data.fullname,
@@ -77,17 +166,18 @@ const Auth = ({ onAuthSuccess }) => {
     setUserData(formattedData);
     setAuthToken(data.accessToken);
     
-    localStorage.setItem('userData', JSON.stringify(formattedData));
-    localStorage.setItem('token', data.accessToken);
+    safeLocalStorage.setItem('userData', JSON.stringify(formattedData));
+    safeLocalStorage.setItem('token', data.accessToken);
     
     if (onAuthSuccess) {
       onAuthSuccess(formattedData);
     }
     
     setCurrentView('dashboard');
-    navigate('/dashboard');
-  };
-  const handleRegistrationSuccess = (data) => {
+    navigateWithLoading('/dashboard');
+  }, [onAuthSuccess, navigateWithLoading]);
+
+  const handleRegistrationSuccess = useCallback((data) => {
     console.log('Registration successful:', data);
     const registrationData = {
       fullname: data.fullName,
@@ -98,13 +188,14 @@ const Auth = ({ onAuthSuccess }) => {
     
     setUserData(registrationData);
     setCurrentView('otp');
-    navigate('/auth?view=otp');
-  };
-  const handleOTPSuccess = (data) => {
+    navigateWithLoading('/auth?view=otp');
+  }, [navigateWithLoading]);
+
+  const handleOTPSuccess = useCallback((data) => {
     const completeUserData = {
       user: {
-        fullname: userData.fullName || userData.fullname, 
-        phoneNumber: userData.phoneNumber,
+        fullname: userData?.fullName || userData?.fullname, 
+        phoneNumber: userData?.phoneNumber,
         isVerified: true,
         ...data.user
       },
@@ -116,51 +207,67 @@ const Auth = ({ onAuthSuccess }) => {
     setUserData(completeUserData);
     setAuthToken(data.accessToken);
     
-    localStorage.setItem('userData', JSON.stringify(completeUserData));
-    localStorage.setItem('token', data.accessToken);
+    safeLocalStorage.setItem('userData', JSON.stringify(completeUserData));
+    safeLocalStorage.setItem('token', data.accessToken);
     
     if (onAuthSuccess) {
       onAuthSuccess(completeUserData);
     }
     
-    setCurrentView('login');
-    navigate('/auth?view=login');
-  };
+    setCurrentView('dashboard');
+    navigateWithLoading('/dashboard');
+  }, [userData, onAuthSuccess, navigateWithLoading]);
 
-
-  const handleSwitchToRegister = () => {
+  const handleSwitchToRegister = useCallback(() => {
     setCurrentView('register');
-    navigate('/auth?view=register');
-  };
+    navigateWithLoading('/auth?view=register');
+  }, [navigateWithLoading]);
 
-  const handleSwitchToLogin = () => {
+  const handleSwitchToLogin = useCallback(() => {
     setCurrentView('login');
-    navigate('/auth?view=login');
-  };
+    navigateWithLoading('/auth?view=login');
+  }, [navigateWithLoading]);
 
-  const handleBackToRegister = () => {
+  const handleBackToRegister = useCallback(() => {
     setCurrentView('register');
-    navigate('/auth?view=register');
-  };
+    navigateWithLoading('/auth?view=register');
+  }, [navigateWithLoading]);
 
-  const handleLogout = () => {
+  const handleLogout = useCallback(() => {
     setUserData(null);
     setAuthToken(null);
     setCurrentView('login');
-    localStorage.removeItem('userData');
-    localStorage.removeItem('currentView');
-    localStorage.removeItem('token');
+    
+    safeLocalStorage.removeItem('userData');
+    safeLocalStorage.removeItem('token');
     
     window.dispatchEvent(new Event('userDataChanged'));
     
-    navigate('/auth?view=login');
-  };
+    navigateWithLoading('/auth?view=login');
+  }, [navigateWithLoading]);
 
+  // Auto-redirect to dashboard if authenticated
   useEffect(() => {
-    if (authToken && userData?.isVerified && currentView !== 'dashboard') {
-      navigate('/dashboard');
+    if (authToken && userData?.isVerified && currentView !== 'dashboard' && !isNavigating) {
+      setCurrentView('dashboard');
+      navigateWithLoading('/dashboard');
     }
-  }, [authToken, userData, currentView, navigate]);
+  }, [authToken, userData, currentView, isNavigating, navigateWithLoading]);
+
+  // Show loading state during navigation
+  if (isNavigating) {
+    return (
+      <div style={{ 
+        display: 'flex', 
+        justifyContent: 'center', 
+        alignItems: 'center', 
+        height: '100vh',
+        backgroundColor: '#f5f5f5'
+      }}>
+        <div>Loading...</div>
+      </div>
+    );
+  }
 
   switch (currentView) {
     case 'login':
