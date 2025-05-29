@@ -30,7 +30,25 @@ const sendMessage = asyncHandler(async (req, res) => {
     type: "received",
   });
 
-  await Promise.all([response1.save(), response2.save()]);
+  const response3 = new Message({
+    userId,
+    content: content.trim(),
+    type: "received",
+  });
+
+  const response4 = new Message({
+    userId,
+    content: content.trim(),
+    type: "received",
+  });
+
+  const response5 = new Message({
+    userId,
+    content: content.trim(),
+    type: "received",
+  });
+
+  await Promise.all([response1.save(), response2.save(), response3.save(), response4.save(), response5.save()]);
 
   res.status(201).json(
     new ApiResponse(
@@ -51,6 +69,24 @@ const sendMessage = asyncHandler(async (req, res) => {
           },
           {
             _id: response2._id,
+            content: response2.content,
+            type: response2.type,
+            createdAt: response2.createdAt,
+          },
+          {
+            _id: response3._id,
+            content: response2.content,
+            type: response2.type,
+            createdAt: response2.createdAt,
+          },
+          {
+            _id: response4._id,
+            content: response2.content,
+            type: response2.type,
+            createdAt: response2.createdAt,
+          },
+          {
+            _id: response5._id,
             content: response2.content,
             type: response2.type,
             createdAt: response2.createdAt,
