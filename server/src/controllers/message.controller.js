@@ -73,24 +73,24 @@ const sendMessage = asyncHandler(async (req, res) => {
             type: response2.type,
             createdAt: response2.createdAt,
           },
-          {
-            _id: response3._id,
-            content: response2.content,
-            type: response2.type,
-            createdAt: response2.createdAt,
-          },
-          {
-            _id: response4._id,
-            content: response2.content,
-            type: response2.type,
-            createdAt: response2.createdAt,
-          },
-          {
-            _id: response5._id,
-            content: response2.content,
-            type: response2.type,
-            createdAt: response2.createdAt,
-          },
+          // {
+          //   _id: response3._id,
+          //   content: response2.content,
+          //   type: response2.type,
+          //   createdAt: response2.createdAt,
+          // },
+          // {
+          //   _id: response4._id,
+          //   content: response2.content,
+          //   type: response2.type,
+          //   createdAt: response2.createdAt,
+          // },
+          // {
+          //   _id: response5._id,
+          //   content: response2.content,
+          //   type: response2.type,
+          //   createdAt: response2.createdAt,
+          // },
         ],
       },
       "Message sent and responses generated successfully"
